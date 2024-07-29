@@ -1,4 +1,5 @@
 import { Repository } from 'typeorm';
+import { CreateUserRequest } from '../dto/CreateUserRequest';
 import { User } from '../model/User';
 
 export interface UserServiceDependencies {
@@ -14,5 +15,9 @@ export class UserService {
 
   async getUsers() {
     return this.userRepository.find();
+  }
+
+  async createUser(user: CreateUserRequest) {
+    return this.userRepository.save(user);
   }
 }

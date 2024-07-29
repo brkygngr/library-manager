@@ -1,6 +1,6 @@
 import { Repository } from 'typeorm';
-import { User } from '../../src/model/User';
-import { UserService } from '../../src/service/UserService';
+import { User } from '../../src/user/model/User';
+import { UserService } from '../../src/user/service/UserService';
 
 describe('UserService', () => {
   let userRepository: jest.Mocked<Repository<User>>;

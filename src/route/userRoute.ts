@@ -1,8 +1,20 @@
 import express from 'express';
-import { getUsers } from '../controller/UserController';
+import { AppDataSource } from '../config/database';
+import { UserController } from '../user/controller/UserController';
+import { User } from '../user/model/User';
+import { UserService } from '../user/service/UserService';
+
+const userService = new UserService({
+  userRepository: AppDataSource.getRepository(User),
+});
+
+const userController = new UserController({
+  userService,
+});
 
 const router = express.Router();
 
-router.get('/', getUsers);
+router.get('/', (req, res) => userController.getUsers(req, res));
+router.post('/', (req, res) => userController.postUser(req, res));
 
 export default router;
