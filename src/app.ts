@@ -1,14 +1,8 @@
 import express from 'express';
-import { AppDataSource } from './config/database';
-
-AppDataSource.initialize()
-  .then(() => {
-    console.log("Data Source has been initialized!");
-  })
-  .catch((err) => {
-    console.error("Error during Data Source initialization:", err);
-  });
+import userRoute from './route/userRoute';
 
 const app = express();
+
+app.use('/users', userRoute);
 
 export default app;
