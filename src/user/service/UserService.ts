@@ -33,7 +33,7 @@ export class UserService {
   async getUser(userId: number): Promise<GetUserResponse | null> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['borrowedBooks', 'returnedBooks.scores'],
+      relations: ['borrowedBooks', 'returnedBooks.scores.user'],
     });
 
     if (!user) {
