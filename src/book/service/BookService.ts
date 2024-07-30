@@ -12,7 +12,13 @@ export class BookService {
     this.bookRepository = dependencies.bookRepository;
   }
 
-  async getBooks(): Promise<Book[]> {
+  async getBooks() {
     return this.bookRepository.find();
+  }
+
+  async getBook(bookId: number) {
+    return this.bookRepository.findOneBy({
+      id: bookId,
+    });
   }
 }

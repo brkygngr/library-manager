@@ -15,5 +15,6 @@ const bookController = new BookController({
 const router = express.Router();
 
 router.get('/', (req, res) => bookController.getBooks(req, res));
+router.get('/:id', (req, res) => bookController.getBook(req, res));
 
 export default router;
