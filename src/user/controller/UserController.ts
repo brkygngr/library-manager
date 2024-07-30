@@ -25,7 +25,7 @@ export class UserController {
     let user: CreateUserRequest;
 
     try {
-      user = postUserSchema.parse(req.body);
+      user = postUserBodySchema.parse(req.body);
     } catch (e) {
       console.error('Error while validating post user request body!', e);
 
