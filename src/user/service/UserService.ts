@@ -2,6 +2,7 @@ import { Repository } from 'typeorm';
 import { Book } from '../../book/model/Book';
 import { CreateUserRequest } from '../dto/CreateUserRequest';
 import { CreateUserResponse } from '../dto/CreateUserResponse';
+import { GetUsersResponse } from '../dto/GetUsersResponse';
 import { User } from '../model/User';
 
 export interface UserServiceDependencies {
@@ -18,8 +19,10 @@ export class UserService {
     this.bookRepository = dependencies.bookRepository;
   }
 
-  async getUsers() {
-    return this.userRepository.find();
+  async getUsers(): Promise<GetUsersResponse[]> {
+    const users = await this.userRepository.find();
+
+    return users.map((user) => ({ id: user.id, name: user.name }));
   }
 
   async getUser(userId: number) {
