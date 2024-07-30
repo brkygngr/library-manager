@@ -16,10 +16,6 @@ out/
 src/*.js
 src/*.js.map
 
-# Environment files
-.env
-.env.*
-
 # OS-specific files
 .DS_Store
 Thumbs.db
