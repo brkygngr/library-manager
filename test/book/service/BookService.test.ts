@@ -1,5 +1,6 @@
 import { Repository } from 'typeorm';
 import { Book } from '../../../src/book/model/Book';
+import { BookScore } from '../../../src/book/model/BookScore';
 import { BookService } from '../../../src/book/service/BookService';
 
 describe('BookService', () => {
@@ -62,6 +63,30 @@ describe('BookService', () => {
         expect.objectContaining({
           id: 1,
           name: 'Test Book 1',
+        }),
+      );
+    });
+
+    it('returns book avg score when the book has scores', async () => {
+      const bookScore1 = new BookScore();
+      bookScore1.value = 4;
+      const bookScore2 = new BookScore();
+      bookScore2.value = 7;
+      const bookScore3 = new BookScore();
+      bookScore3.value = 7;
+
+      const book = new Book();
+      book.id = 1;
+      book.name = 'Test Book 1';
+      book.scores = [bookScore1, bookScore2, bookScore3];
+
+      bookRepository.findOneBy.mockResolvedValue(book);
+
+      const result = await bookService.getBook(1);
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          score: 6,
         }),
       );
     });
