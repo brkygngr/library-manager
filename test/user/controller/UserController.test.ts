@@ -170,7 +170,7 @@ describe('UserController', () => {
 
     it('returns bad request when the book is already borrowed by another user', async () => {
       const testUser1 = await userRepository.save({ name: 'Test User 1', borrowedBooks: [] });
-      const testUser2 = await userRepository.save({ name: 'Test User 1', borrowedBooks: [] });
+      const testUser2 = await userRepository.save({ name: 'Test User 2', borrowedBooks: [] });
       const testBook1 = await bookRepository.save({ name: 'Test Book 1' });
       testUser2.borrowedBooks.push(testBook1);
       testBook1.borrowedBy = testUser2;
@@ -212,6 +212,113 @@ describe('UserController', () => {
       const testBook1 = await bookRepository.save({ name: 'Test Book 1' });
 
       const response = await request(app).post(`/users/${testUser1.id}/borrow/${testBook1.id}`).send();
+
+      expect(response.status).toBe(204);
+      expect(response.body).toEqual({});
+    });
+  });
+
+  describe('POST /users/:userId/return/:bookId', () => {
+    it('returns bad request when user does not exist', async () => {
+      const response = await request(app).post('/users/999/return/1').send({ score: 1 });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        timestamp: expect.any(String),
+        error: {
+          message: 'User#999 not found!',
+        },
+      });
+    });
+
+    it('returns bad request when book does not exist', async () => {
+      const testUser1 = await userRepository.save({ name: 'Test User 1' });
+
+      const response = await request(app).post(`/users/${testUser1.id}/return/999`).send({ score: 1 });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        timestamp: expect.any(String),
+        error: {
+          message: 'Book#999 not found!',
+        },
+      });
+    });
+
+    it('returns bad request when the book is not borrowed by the user', async () => {
+      const testUser1 = await userRepository.save({ name: 'Test User 1', borrowedBooks: [] });
+      const testBook1 = await bookRepository.save({ name: 'Test Book 1' });
+
+      const response = await request(app).post(`/users/${testUser1.id}/return/${testBook1.id}`).send({ score: 1 });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        timestamp: expect.any(String),
+        error: {
+          message: `Book#${testBook1.id} is not borrowed by the user!`,
+        },
+      });
+    });
+
+    it('returns bad request when the score is not given', async () => {
+      const testUser1 = await userRepository.save({ name: 'Test User 1' });
+      const testBook1 = await bookRepository.save({ name: 'Test Book 1' });
+
+      const response = await request(app).post(`/users/${testUser1.id}/return/${testBook1.id}`).send();
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        timestamp: expect.any(String),
+        error: expect.objectContaining({
+          issues: expect.arrayContaining([expect.objectContaining({ message: 'Score is required!' })]),
+        }),
+      });
+    });
+
+    it('returns bad request when the score is a negative number', async () => {
+      const testUser1 = await userRepository.save({ name: 'Test User 1' });
+      const testBook1 = await bookRepository.save({ name: 'Test Book 1' });
+
+      const response = await request(app).post(`/users/${testUser1.id}/return/${testBook1.id}`).send({
+        score: -5,
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        timestamp: expect.any(String),
+        error: expect.objectContaining({
+          issues: expect.arrayContaining([expect.objectContaining({ message: 'Score must be between 1 and 10!' })]),
+        }),
+      });
+    });
+
+    it('returns bad request when the score is a bigger then ten', async () => {
+      const testUser1 = await userRepository.save({ name: 'Test User 1' });
+      const testBook1 = await bookRepository.save({ name: 'Test Book 1' });
+
+      const response = await request(app).post(`/users/${testUser1.id}/return/${testBook1.id}`).send({
+        score: 15,
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        timestamp: expect.any(String),
+        error: expect.objectContaining({
+          issues: expect.arrayContaining([expect.objectContaining({ message: 'Score must be between 1 and 10!' })]),
+        }),
+      });
+    });
+
+    it('returns no content when the book is successfully returned', async () => {
+      const testBook1 = await bookRepository.save({ name: 'Test Book 1' });
+      const testUser1 = await userRepository.save({ name: 'Test User 1', borrowedBooks: [testBook1] });
+      testBook1.borrowedBy = testUser1;
+
+      await bookRepository.save(testBook1);
+
+      const response = await request(app).post(`/users/${testUser1.id}/return/${testBook1.id}`).send({
+        score: 1,
+      });
 
       expect(response.status).toBe(204);
       expect(response.body).toEqual({});

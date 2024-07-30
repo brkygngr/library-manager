@@ -20,5 +20,6 @@ router.get('/', (req, res) => userController.getUsers(req, res));
 router.get('/:id', (req, res) => userController.getUser(req, res));
 router.post('/', (req, res) => userController.postUser(req, res));
 router.post('/:userId/borrow/:bookId', (req, res) => userController.postBorrowBook(req, res));
+router.post('/:userId/return/:bookId', (req, res) => userController.postReturnBook(req, res));
 
 export default router;

@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
-import { CreateUserRequest } from '../dto/CreateUserRequest';
 import { ErrorResponse } from '../../error/dto/ErrorResponse';
+import { CreateUserRequest } from '../dto/CreateUserRequest';
 import { UserService } from '../service/UserService';
 import {
   getUserParamsSchema,
   PostBorrowBookParams,
   postBorrowBookParamsSchema,
+  postReturnBookBodySchema,
+  PostReturnBookParams,
+  postReturnBookParamsSchema,
   postUserBodySchema,
 } from '../validation/UserValidation';
 
@@ -109,6 +112,56 @@ export class UserController {
       const errorResponse: ErrorResponse = ErrorResponse.fromError(
         e,
         `User#${params.userId} encountered error while borrowing book#${params.bookId}!`,
+      );
+
+      res.status(400).json(errorResponse);
+      return;
+    }
+
+    res.status(204).send();
+  }
+
+  async postReturnBook(req: Request, res: Response) {
+    let params: PostReturnBookParams;
+
+    try {
+      params = postReturnBookParamsSchema.parse(req.params);
+    } catch (e) {
+      console.error('Error while validating post return book request params!', e);
+
+      const errorResponse: ErrorResponse = {
+        timestamp: Date.now().toString(),
+        error: e,
+      };
+
+      res.status(400).json(errorResponse);
+      return;
+    }
+
+    let score: number;
+
+    try {
+      score = postReturnBookBodySchema.parse(req.body).score;
+    } catch (e) {
+      console.error('Error while validating post return book request params!', e);
+
+      const errorResponse: ErrorResponse = {
+        timestamp: Date.now().toString(),
+        error: e,
+      };
+
+      res.status(400).json(errorResponse);
+      return;
+    }
+
+    try {
+      await this.userService.returnBook(params.userId, params.bookId, score);
+    } catch (e) {
+      console.error(`User#${params.userId} encountered error while returning book#${params.bookId}!`, e);
+
+      const errorResponse: ErrorResponse = ErrorResponse.fromError(
+        e,
+        `User#${params.userId} encountered error while returning book#${params.bookId}!`,
       );
 
       res.status(400).json(errorResponse);

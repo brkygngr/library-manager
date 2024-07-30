@@ -111,39 +111,37 @@ describe('UserService', () => {
     });
 
     it('throws an error when the book is already borrowed by another user', async () => {
+      const book = new Book();
+      book.id = 1;
+      book.name = 'Test Book 1';
+      book.borrowedBy = { id: 2, name: 'Test User 2', borrowedBooks: [], returnedBooks: [] };
+      book.returnedByUsers = [];
+
       userRepository.findOne.mockResolvedValue({
         id: 1,
         name: 'Test User 1',
         borrowedBooks: [],
         returnedBooks: [],
       });
-      bookRepository.findOne.mockResolvedValue({
-        id: 1,
-        name: 'Test Book 1',
-        borrowedBy: { id: 2, name: 'Test User 2', borrowedBooks: [], returnedBooks: [] },
-        returnedByUsers: [],
-        isBorrowed: () => true,
-        isBorrowedByUser: () => false,
-      });
+      bookRepository.findOne.mockResolvedValue(book);
 
       await expect(userService.borrowBook(1, 1)).rejects.toThrow('Book#1 is already borrowed by another user!');
     });
 
     it('throws an error when the book is already borrowed by the user', async () => {
+      const book = new Book();
+      book.id = 1;
+      book.name = 'Test Book 1';
+      book.borrowedBy = { id: 1, name: 'Test User 1', borrowedBooks: [], returnedBooks: [] };
+      book.returnedByUsers = [];
+
       userRepository.findOne.mockResolvedValue({
         id: 1,
         name: 'Test User 1',
-        borrowedBooks: [],
+        borrowedBooks: [book],
         returnedBooks: [],
       });
-      bookRepository.findOne.mockResolvedValue({
-        id: 1,
-        name: 'Test Book 1',
-        borrowedBy: { id: 2, name: 'Test User 2', borrowedBooks: [], returnedBooks: [] },
-        returnedByUsers: [],
-        isBorrowed: () => true,
-        isBorrowedByUser: () => true,
-      });
+      bookRepository.findOne.mockResolvedValue(book);
 
       await expect(userService.borrowBook(1, 1)).rejects.toThrow('Book#1 is already borrowed by the user!');
     });
@@ -155,14 +153,11 @@ describe('UserService', () => {
         borrowedBooks: [],
         returnedBooks: [],
       };
-      const book = {
-        id: 1,
-        name: 'Test Book 1',
-        borrowedBy: { id: 2, name: 'Test User 2', borrowedBooks: [], returnedBooks: [] },
-        returnedByUsers: [],
-        isBorrowed: () => false,
-        isBorrowedByUser: () => false,
-      };
+      const book = new Book();
+      book.id = 1;
+      book.name = 'Test Book 1';
+      book.borrowedBy = null;
+      book.returnedByUsers = [];
 
       userRepository.findOne.mockResolvedValue(user);
       bookRepository.findOne.mockResolvedValue(book);
@@ -175,6 +170,70 @@ describe('UserService', () => {
       expect(book.borrowedBy).toBe(user);
       expect(userRepository.save).toHaveBeenCalledWith(user);
       expect(bookRepository.save).toHaveBeenCalledWith(book);
+    });
+  });
+
+  describe('returnBook', () => {
+    it('throws an error when the user is null', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+
+      await expect(userService.returnBook(1, 1, 0)).rejects.toThrow('User#1 not found!');
+    });
+
+    it('throws an error when the book is null', async () => {
+      userRepository.findOne.mockResolvedValue({
+        id: 1,
+        name: 'Test User 1',
+        borrowedBooks: [],
+        returnedBooks: [],
+      });
+      bookRepository.findOne.mockResolvedValue(null);
+
+      await expect(userService.returnBook(1, 1, 0)).rejects.toThrow('Book#1 not found!');
+    });
+
+    it('throws an error when the book is not borrowed by the user', async () => {
+      const book = new Book();
+      book.id = 1;
+      book.name = 'Test Book 1';
+      book.borrowedBy = { id: 2, name: 'Test User 2', borrowedBooks: [], returnedBooks: [] };
+      book.returnedByUsers = [];
+
+      userRepository.findOne.mockResolvedValue({
+        id: 1,
+        name: 'Test User 1',
+        borrowedBooks: [],
+        returnedBooks: [],
+      });
+      bookRepository.findOne.mockResolvedValue(book);
+
+      await expect(userService.returnBook(1, 1, 0)).rejects.toThrow(`Book#1 is not borrowed by the user!`);
+    });
+
+    it('returns the book', async () => {
+      const book = new Book();
+      book.id = 1;
+      book.name = 'Test Book 1';
+      book.borrowedBy = { id: 1, name: 'Test User 1', borrowedBooks: [], returnedBooks: [] };
+      book.returnedByUsers = [];
+
+      const user = new User();
+      user.id = 1;
+      user.name = 'Test User 1';
+      user.borrowedBooks = [book];
+      user.returnedBooks = [];
+
+      userRepository.findOne.mockResolvedValue(user);
+      bookRepository.findOne.mockResolvedValue(book);
+
+      const result = await userService.returnBook(1, 1, 0);
+
+      expect(result).toEqual({
+        id: 1,
+        name: 'Test User 1',
+        borrowedBooks: [],
+        returnedBooks: [book],
+      });
     });
   });
 });
