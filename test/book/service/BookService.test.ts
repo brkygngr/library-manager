@@ -26,17 +26,17 @@ describe('BookService', () => {
     });
 
     it('returns books when there are books', async () => {
-      bookRepository.find.mockResolvedValue([
-        { id: 1, name: 'Test Book 1' },
-        { id: 2, name: 'Test Book 2' },
-      ]);
+      const testBook1 = new Book();
+      testBook1.id = 1;
+      testBook1.name = 'Test Book 1';
+      const testBook2 = new Book();
+      testBook2.id = 2;
+      testBook2.name = 'Test Book 2';
+      bookRepository.find.mockResolvedValue([testBook1, testBook2]);
 
       const result = await bookService.getBooks();
 
-      expect(result).toEqual([
-        { id: 1, name: 'Test Book 1' },
-        { id: 2, name: 'Test Book 2' },
-      ]);
+      expect(result.sort()).toEqual([testBook1, testBook2]);
     });
   });
 
@@ -50,7 +50,11 @@ describe('BookService', () => {
     });
 
     it('returns book id and name when the book exists', async () => {
-      bookRepository.findOneBy.mockResolvedValue({ id: 1, name: 'Test Book 1' });
+      const book = new Book();
+      book.id = 1;
+      book.name = 'Test Book 1';
+
+      bookRepository.findOneBy.mockResolvedValue(book);
 
       const result = await bookService.getBook(1);
 
@@ -65,17 +69,15 @@ describe('BookService', () => {
 
   describe('createBook', () => {
     it('returns the created book when book is saved with name', async () => {
-      bookRepository.save.mockResolvedValue({
-        id: 1,
-        name: 'Test Book 1',
-      });
+      const book = new Book();
+      book.id = 1;
+      book.name = 'Test Book 1';
+
+      bookRepository.save.mockResolvedValue(book);
 
       const result = await bookService.createBook({ name: 'Test Book 1' });
 
-      expect(result).toEqual({
-        id: 1,
-        name: 'Test Book 1',
-      });
+      expect(result).toEqual(book);
       expect(bookRepository.save).toHaveBeenCalledWith({ name: 'Test Book 1' });
     });
   });

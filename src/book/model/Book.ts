@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from '../../user/model/User';
 
 @Entity()
 export class Book {
@@ -7,4 +8,18 @@ export class Book {
 
   @Column()
   name: string;
+
+  @ManyToOne(() => User, (user) => user.borrowedBooks, { nullable: true })
+  borrowedBy?: User;
+
+  @ManyToMany(() => User, (user) => user.returnedBooks)
+  returnedByUsers: User[];
+
+  isBorrowed(): boolean {
+    return typeof this.borrowedBy?.id === 'number';
+  }
+
+  isBorrowedByUser(userId: number): boolean {
+    return this.borrowedBy?.id === userId;
+  }
 }

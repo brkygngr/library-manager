@@ -2,7 +2,12 @@ import { Request, Response } from 'express';
 import { CreateUserRequest } from '../dto/CreateUserRequest';
 import { ErrorResponse } from '../../error/dto/ErrorResponse';
 import { UserService } from '../service/UserService';
-import { getUserParamsSchema, postUserBodySchema } from '../validation/UserValidation';
+import {
+  getUserParamsSchema,
+  PostBorrowBookParams,
+  postBorrowBookParamsSchema,
+  postUserBodySchema,
+} from '../validation/UserValidation';
 
 export interface UserControllerDependencies {
   readonly userService: UserService;
@@ -74,8 +79,42 @@ export class UserController {
       return;
     }
 
-    const created = await this.userService.createUser(user);
+    await this.userService.createUser(user);
 
-    res.status(201).json(created);
+    res.status(201).send();
+  }
+
+  async postBorrowBook(req: Request, res: Response) {
+    let params: PostBorrowBookParams;
+
+    try {
+      params = postBorrowBookParamsSchema.parse(req.params);
+    } catch (e) {
+      console.error('Error while validating post borrow book request params!', e);
+
+      const errorResponse: ErrorResponse = {
+        timestamp: Date.now().toString(),
+        error: e,
+      };
+
+      res.status(400).json(errorResponse);
+      return;
+    }
+
+    try {
+      await this.userService.borrowBook(params.userId, params.bookId);
+    } catch (e) {
+      console.error(`User#${params.userId} encountered error while borrowing book#${params.bookId}!`, e);
+
+      const errorResponse: ErrorResponse = ErrorResponse.fromError(
+        e,
+        `User#${params.userId} encountered error while borrowing book#${params.bookId}!`,
+      );
+
+      res.status(400).json(errorResponse);
+      return;
+    }
+
+    res.status(204).send();
   }
 }

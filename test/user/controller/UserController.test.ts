@@ -1,20 +1,24 @@
 import request from 'supertest';
 import { Repository } from 'typeorm';
-import { User } from '../../../src/user/model/User';
-import { AppDataSource } from '../../../src/config/database';
 import app from '../../../src/app';
+import { Book } from '../../../src/book/model/Book';
+import { AppDataSource } from '../../../src/config/database';
+import { User } from '../../../src/user/model/User';
 
 describe('UserController', () => {
   let userRepository: Repository<User>;
+  let bookRepository: Repository<Book>;
 
   beforeAll(async () => {
     await AppDataSource.initialize();
 
     userRepository = AppDataSource.getRepository(User);
+    bookRepository = AppDataSource.getRepository(Book);
   });
 
   beforeEach(async () => {
-    await userRepository.clear();
+    await userRepository.query(`TRUNCATE TABLE "user" CASCADE;`);
+    await bookRepository.query(`TRUNCATE TABLE "book" CASCADE;`);
   });
 
   afterAll(async () => {
@@ -112,7 +116,9 @@ describe('UserController', () => {
       expect(response.status).toBe(400);
       expect(response.body).toEqual({
         timestamp: expect.any(String),
-        error: expect.any(Object),
+        error: expect.objectContaining({
+          issues: expect.arrayContaining([expect.objectContaining({ message: 'User name is required!' })]),
+        }),
       });
     });
 
@@ -122,17 +128,93 @@ describe('UserController', () => {
       expect(response.status).toBe(400);
       expect(response.body).toEqual({
         timestamp: expect.any(String),
-        error: expect.any(Object),
+        error: expect.objectContaining({
+          issues: expect.arrayContaining([expect.objectContaining({ message: 'User name must be a string!' })]),
+        }),
       });
     });
 
-    it('returns ok when user name is john doe', async () => {
+    it('returns created when user name is john doe', async () => {
       const response = await request(app).post('/users').send({ name: 'john doe' }).expect(201);
 
+      expect(response.status).toBe(201);
+    });
+  });
+
+  describe('POST /users/:userId/borrow/:bookId', () => {
+    it('returns bad request when user does not exist', async () => {
+      const response = await request(app).post('/users/999/borrow/1').send();
+
+      expect(response.status).toBe(400);
       expect(response.body).toEqual({
-        id: expect.any(Number),
-        name: 'john doe',
+        timestamp: expect.any(String),
+        error: {
+          message: 'User#999 not found!',
+        },
       });
+    });
+
+    it('returns bad request when book does not exist', async () => {
+      const testUser1 = await userRepository.save({ name: 'Test User 1' });
+
+      const response = await request(app).post(`/users/${testUser1.id}/borrow/999`).send();
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        timestamp: expect.any(String),
+        error: {
+          message: 'Book#999 not found!',
+        },
+      });
+    });
+
+    it('returns bad request when the book is already borrowed by another user', async () => {
+      const testUser1 = await userRepository.save({ name: 'Test User 1', borrowedBooks: [] });
+      const testUser2 = await userRepository.save({ name: 'Test User 1', borrowedBooks: [] });
+      const testBook1 = await bookRepository.save({ name: 'Test Book 1' });
+      testUser2.borrowedBooks.push(testBook1);
+      testBook1.borrowedBy = testUser2;
+      await userRepository.save(testUser2);
+      await bookRepository.save(testBook1);
+
+      const response = await request(app).post(`/users/${testUser1.id}/borrow/${testBook1.id}`).send();
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        timestamp: expect.any(String),
+        error: {
+          message: `Book#${testBook1.id} is already borrowed by another user!`,
+        },
+      });
+    });
+
+    it('returns bad request when the book is already borrowed by the user', async () => {
+      const testUser1 = await userRepository.save({ name: 'Test User 1', borrowedBooks: [] });
+      const testBook1 = await bookRepository.save({ name: 'Test Book 1' });
+      testUser1.borrowedBooks.push(testBook1);
+      testBook1.borrowedBy = testUser1;
+      await userRepository.save(testUser1);
+      await bookRepository.save(testBook1);
+
+      const response = await request(app).post(`/users/${testUser1.id}/borrow/${testBook1.id}`).send();
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        timestamp: expect.any(String),
+        error: {
+          message: `Book#${testBook1.id} is already borrowed by the user!`,
+        },
+      });
+    });
+
+    it('returns no content when the book is successfully borrowed', async () => {
+      const testUser1 = await userRepository.save({ name: 'Test User 1', borrowedBooks: [] });
+      const testBook1 = await bookRepository.save({ name: 'Test Book 1' });
+
+      const response = await request(app).post(`/users/${testUser1.id}/borrow/${testBook1.id}`).send();
+
+      expect(response.status).toBe(204);
+      expect(response.body).toEqual({});
     });
   });
 });

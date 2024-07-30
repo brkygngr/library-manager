@@ -14,7 +14,7 @@ describe('BookController', () => {
   });
 
   beforeEach(async () => {
-    await bookRepository.clear();
+    await bookRepository.query(`TRUNCATE TABLE "book" CASCADE;`);
   });
 
   afterAll(async () => {
@@ -126,13 +126,10 @@ describe('BookController', () => {
       });
     });
 
-    it('returns ok when book name is Mist Born', async () => {
-      const response = await request(app).post('/books').send({ name: 'Mist Born' }).expect(201);
+    it('returns created when book name is Mist Born', async () => {
+      const response = await request(app).post('/books').send({ name: 'Mist Born' });
 
-      expect(response.body).toEqual({
-        id: expect.any(Number),
-        name: 'Mist Born',
-      });
+      expect(response.status).toBe(201);
     });
   });
 });

@@ -74,8 +74,8 @@ export class BookController {
       return;
     }
 
-    const created = await this.bookService.createBook(book);
+    await this.bookService.createBook(book);
 
-    res.status(201).json(created);
+    res.status(201).send();
   }
 }

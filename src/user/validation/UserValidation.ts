@@ -21,3 +21,26 @@ export const postUserBodySchema = z.object(
   },
   { invalid_type_error: 'User must be an object with a name field!' },
 );
+
+export const postBorrowBookParamsSchema = z.object({
+  userId: z
+    .string({ required_error: 'User id is required!' })
+    .refine((val) => !isNaN(Number(val)), {
+      message: 'User id must be a number!',
+    })
+    .transform((val) => Number(val))
+    .refine((val) => Number.isInteger(val) && val > 0, {
+      message: 'User id must be a positive integer!',
+    }),
+  bookId: z
+    .string({ required_error: 'Book id is required!' })
+    .refine((val) => !isNaN(Number(val)), {
+      message: 'Book id must be a number!',
+    })
+    .transform((val) => Number(val))
+    .refine((val) => Number.isInteger(val) && val > 0, {
+      message: 'Book id must be a positive integer!',
+    }),
+});
+
+export type PostBorrowBookParams = z.infer<typeof postBorrowBookParamsSchema>;
