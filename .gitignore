@@ -13,8 +13,8 @@ out/
 *.d.ts
 
 # Compiled JavaScript files
-*.js
-*.js.map
+src/*.js
+src/*.js.map
 
 # Environment files
 .env
