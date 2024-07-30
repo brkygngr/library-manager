@@ -14,3 +14,10 @@ export const getBookParamsSchema = z.object(
   },
   { invalid_type_error: 'Request params must include an id field!' },
 );
+
+export const postBookBodySchema = z.object(
+  {
+    name: z.string({ required_error: 'Book name is required!', invalid_type_error: 'Book name must be a string!' }),
+  },
+  { invalid_type_error: 'Book must be an object with a name field!' },
+);

@@ -1,8 +1,8 @@
 import request from 'supertest';
 import { Repository } from 'typeorm';
-import app from '../../src/app';
-import { AppDataSource } from '../../src/config/database';
-import { User } from '../../src/user/model/User';
+import { User } from '../../../src/user/model/User';
+import { AppDataSource } from '../../../src/config/database';
+import app from '../../../src/app';
 
 describe('UserController', () => {
   let userRepository: Repository<User>;

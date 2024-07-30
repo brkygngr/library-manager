@@ -104,4 +104,35 @@ describe('BookController', () => {
       expect(response.body).toEqual(testBook1);
     });
   });
+
+  describe('POST /books', () => {
+    it('returns bad request when request body is an empty object', async () => {
+      const response = await request(app).post('/books').send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        timestamp: expect.any(String),
+        error: expect.any(Object),
+      });
+    });
+
+    it('returns bad request when book name is an object', async () => {
+      const response = await request(app).post('/books').send({ name: {} });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        timestamp: expect.any(String),
+        error: expect.any(Object),
+      });
+    });
+
+    it('returns ok when book name is Mist Born', async () => {
+      const response = await request(app).post('/books').send({ name: 'Mist Born' }).expect(201);
+
+      expect(response.body).toEqual({
+        id: expect.any(Number),
+        name: 'Mist Born',
+      });
+    });
+  });
 });

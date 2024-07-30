@@ -10,6 +10,7 @@ describe('BookService', () => {
     bookRepository = {
       find: jest.fn(),
       findOneBy: jest.fn(),
+      save: jest.fn(),
     } as Partial<jest.Mocked<Repository<Book>>> as jest.Mocked<Repository<Book>>;
 
     bookService = new BookService({ bookRepository });
@@ -59,6 +60,23 @@ describe('BookService', () => {
           name: 'Test Book 1',
         }),
       );
+    });
+  });
+
+  describe('createBook', () => {
+    it('returns the created book when book is saved with name', async () => {
+      bookRepository.save.mockResolvedValue({
+        id: 1,
+        name: 'Test Book 1',
+      });
+
+      const result = await bookService.createBook({ name: 'Test Book 1' });
+
+      expect(result).toEqual({
+        id: 1,
+        name: 'Test Book 1',
+      });
+      expect(bookRepository.save).toHaveBeenCalledWith({ name: 'Test Book 1' });
     });
   });
 });

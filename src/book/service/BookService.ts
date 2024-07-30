@@ -1,4 +1,5 @@
 import { Repository } from 'typeorm';
+import { CreateBookRequest } from '../dto/CreateBookRequest';
 import { Book } from '../model/Book';
 
 export interface BookServiceDependencies {
@@ -20,5 +21,9 @@ export class BookService {
     return this.bookRepository.findOneBy({
       id: bookId,
     });
+  }
+
+  async createBook(book: CreateBookRequest) {
+    return this.bookRepository.save(book);
   }
 }
