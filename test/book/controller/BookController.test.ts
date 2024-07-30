@@ -101,7 +101,10 @@ describe('BookController', () => {
       const response = await request(app).get('/books/' + testBook1.id);
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual(testBook1);
+      expect(response.body).toEqual({
+        ...testBook1,
+        score: -1,
+      });
     });
   });
 

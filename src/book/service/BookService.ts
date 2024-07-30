@@ -28,7 +28,7 @@ export class BookService {
       return null;
     }
 
-    if (book.scores.length === 0) {
+    if (!book.scores || book.scores.length === 0) {
       return {
         id: book.id,
         name: book.name,

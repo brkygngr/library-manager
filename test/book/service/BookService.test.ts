@@ -10,7 +10,7 @@ describe('BookService', () => {
   beforeEach(() => {
     bookRepository = {
       find: jest.fn(),
-      findOneBy: jest.fn(),
+      findOne: jest.fn(),
       save: jest.fn(),
     } as Partial<jest.Mocked<Repository<Book>>> as jest.Mocked<Repository<Book>>;
 
@@ -43,7 +43,7 @@ describe('BookService', () => {
 
   describe('getBook', () => {
     it('returns null when there are no books', async () => {
-      bookRepository.findOneBy.mockResolvedValue(null);
+      bookRepository.findOne.mockResolvedValue(null);
 
       const result = await bookService.getBook(-1);
 
@@ -55,7 +55,7 @@ describe('BookService', () => {
       book.id = 1;
       book.name = 'Test Book 1';
 
-      bookRepository.findOneBy.mockResolvedValue(book);
+      bookRepository.findOne.mockResolvedValue(book);
 
       const result = await bookService.getBook(1);
 
@@ -80,7 +80,7 @@ describe('BookService', () => {
       book.name = 'Test Book 1';
       book.scores = [bookScore1, bookScore2, bookScore3];
 
-      bookRepository.findOneBy.mockResolvedValue(book);
+      bookRepository.findOne.mockResolvedValue(book);
 
       const result = await bookService.getBook(1);
 
