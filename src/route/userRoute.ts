@@ -15,6 +15,7 @@ const userController = new UserController({
 const router = express.Router();
 
 router.get('/', (req, res) => userController.getUsers(req, res));
+router.get('/:id', (req, res) => userController.getUser(req, res));
 router.post('/', (req, res) => userController.postUser(req, res));
 
 export default router;

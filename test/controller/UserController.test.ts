@@ -1,8 +1,8 @@
 import request from 'supertest';
+import { Repository } from 'typeorm';
 import app from '../../src/app';
 import { AppDataSource } from '../../src/config/database';
 import { User } from '../../src/user/model/User';
-import { Repository } from 'typeorm';
 
 describe('UserController', () => {
   let userRepository: Repository<User>;
@@ -41,6 +41,67 @@ describe('UserController', () => {
       expect(response.body).toHaveLength(2);
       expect(response.body[0]).toHaveProperty('name', 'Test User 1');
       expect(response.body[1]).toHaveProperty('name', 'Test User 2');
+    });
+  });
+
+  describe('GET /users/:id', () => {
+    it('returns a not found status when user is not found', async () => {
+      const response = await request(app).get('/users/999');
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({
+        error: {
+          message: 'User#999 not found!',
+        },
+        timestamp: expect.any(String),
+      });
+    });
+
+    it('returns a bad request status when user id is negative', async () => {
+      const response = await request(app).get('/users/-1');
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        error: expect.objectContaining({
+          issues: [expect.objectContaining({ message: 'User id must be a positive integer!' })],
+        }),
+        timestamp: expect.any(String),
+      });
+    });
+
+    it('returns a bad request status when user id is double', async () => {
+      const response = await request(app).get('/users/1.23');
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        error: expect.objectContaining({
+          issues: [expect.objectContaining({ message: 'User id must be a positive integer!' })],
+        }),
+        timestamp: expect.any(String),
+      });
+    });
+
+    it('returns a bad request status when user id is undefined', async () => {
+      const response = await request(app).get('/users/undefined');
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        error: expect.objectContaining({
+          issues: expect.arrayContaining([expect.objectContaining({ message: 'User id must be a number!' })]),
+        }),
+        timestamp: expect.any(String),
+      });
+    });
+
+    it('returns the user when the user exists', async () => {
+      const testUser1 = userRepository.create({ name: 'Test User 1' });
+
+      await userRepository.save([testUser1]);
+
+      const response = await request(app).get('/users/' + testUser1.id);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(testUser1);
     });
   });
 

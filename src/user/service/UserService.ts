@@ -17,6 +17,12 @@ export class UserService {
     return this.userRepository.find();
   }
 
+  async getUser(userId: number) {
+    return this.userRepository.findOneBy({
+      id: userId,
+    });
+  }
+
   async createUser(user: CreateUserRequest) {
     return this.userRepository.save(user);
   }
