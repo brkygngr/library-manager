@@ -1,9 +1,14 @@
 {
-  "include": ["src"],
-  "exclude": ["test"],
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "test",
+    "node_modules"
+  ],
   "compilerOptions": {
     "target": "es6",
-    "module": "nodenext",
+    "module": "CommonJS",
     "outDir": "./dist",
     "strict": true,
     "strictNullChecks": true,
