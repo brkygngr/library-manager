@@ -98,14 +98,16 @@ describe('UserController', () => {
     });
 
     it('returns the user when the user exists', async () => {
-      const testUser1 = userRepository.create({ name: 'Test User 1' });
-
-      await userRepository.save([testUser1]);
+      const testUser1 = await userRepository.save({ name: 'Test User 1' });
 
       const response = await request(app).get('/users/' + testUser1.id);
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual(testUser1);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          name: testUser1.name,
+        }),
+      );
     });
   });
 

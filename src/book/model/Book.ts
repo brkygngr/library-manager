@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../../user/model/User';
+import { BookScore } from './BookScore';
 
 @Entity()
 export class Book {
@@ -10,13 +11,13 @@ export class Book {
   name: string;
 
   @ManyToOne(() => User, (user) => user.borrowedBooks, { nullable: true })
-  borrowedBy?: User | null;
+  borrowedBy: User | null;
 
   @ManyToMany(() => User, (user) => user.returnedBooks)
   returnedByUsers: User[];
 
-  @Column({ type: 'float', default: -1.0 })
-  score: number = -1.0;
+  @OneToMany(() => BookScore, (bookScore) => bookScore.book)
+  scores: BookScore[];
 
   isBorrowed(): boolean {
     return typeof this.borrowedBy?.id === 'number';
@@ -24,19 +25,5 @@ export class Book {
 
   isBorrowedByUser(userId: number): boolean {
     return this.borrowedBy?.id === userId;
-  }
-
-  addScore(score: number) {
-    if (this.score === -1.0) {
-      this.score = score;
-
-      return;
-    }
-
-    const scorerCount = this.returnedByUsers.length;
-
-    const totalScore = this.score * scorerCount;
-
-    this.score = (totalScore + score) / (scorerCount + 1);
   }
 }
