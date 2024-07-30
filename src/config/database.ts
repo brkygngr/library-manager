@@ -1,5 +1,8 @@
-import { DataSource } from 'typeorm';
 import dotenv from 'dotenv';
+import { DataSource } from 'typeorm';
+import { Book } from '../book/model/Book';
+import { BookScore } from '../book/model/BookScore';
+import { User } from '../user/model/User';
 
 dotenv.config();
 
@@ -12,5 +15,5 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME,
   synchronize: true,
   logging: false,
-  entities: ['src/user/model/**/*.ts', 'src/book/model/**/*.ts'],
+  entities: [User, Book, BookScore],
 });
