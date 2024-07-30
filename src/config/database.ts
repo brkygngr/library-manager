@@ -12,5 +12,5 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME,
   synchronize: true,
   logging: false,
-  entities: ['src/user/model/**/*.ts'],
+  entities: ['src/user/model/**/*.ts', 'src/book/model/**/*.ts'],
 });
