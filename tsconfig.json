@@ -1,9 +1,10 @@
 {
+  "include": ["src"],
+  "exclude": ["test"],
   "compilerOptions": {
     "target": "es6",
     "module": "nodenext",
     "outDir": "./dist",
-    "rootDir": "./src",
     "strict": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
