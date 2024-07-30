@@ -5,6 +5,7 @@
   "main": "dist/index.ts",
   "scripts": {
     "start": "node dist/index.ts",
+    "predev": "docker compose up -d",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "lint": "eslint . --ext .ts",
