@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { CreateUserRequest } from '../dto/CreateUserRequest';
-import { ErrorResponse } from '../dto/ErrorResponse';
+import { ErrorResponse } from '../../error/dto/ErrorResponse';
 import { UserService } from '../service/UserService';
 import { getUserParamsSchema, postUserBodySchema } from '../validation/UserValidation';
 
